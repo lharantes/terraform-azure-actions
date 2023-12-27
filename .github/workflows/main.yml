@@ -20,7 +20,18 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      
+    - name: Setup Infracost
+      uses: infracost/actions/setup@v2
+      with:
+        api-key: ${{ secrets.INFRACOST_API_KEY }}
 
+    - name: Generate Infracost cost estimate baseline
+      run: |
+        infracost breakdown --path=terraform \
+                            --format=json \
+                            --out-file=/tmp/infracost-base.json
+    
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
