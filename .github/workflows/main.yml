@@ -29,6 +29,11 @@ jobs:
       with:
         api-key: ${{ secrets.INFRACOST_API_KEY }}
 
+    - name: Checkout base branch
+      uses: actions/checkout@v3
+      with:
+       ref: '${{ github.event.pull_request.base.ref }}'
+       
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
@@ -44,13 +49,14 @@ jobs:
       working-directory: ./terraform
       run: terraform show -json tfplan.binary > plan.json
 
-    - name: Terraform Apply
-      working-directory: ./terraform
-      run: terraform apply -input=false -auto-approve
+
 
     - name: Generate Infracost JSON
       run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost-base.json
 
+    - name: Checkout PR branch
+      uses: actions/checkout@v3
+      
     - name: Generate Infracost diff
       run: |
         infracost diff --path=./terraform \
