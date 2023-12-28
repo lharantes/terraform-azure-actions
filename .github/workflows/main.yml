@@ -1,3 +1,4 @@
+# teste
 name: 'Terraform'
 on: [pull_request]
 
@@ -8,60 +9,54 @@ jobs:
   terraform:
     name: 'Terraform'
     env:
+      working-directory: ${{ github.workspace }}
       ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       
     runs-on: ubuntu-latest
-    environment: dev
-    defaults:
-      run:
-        shell: bash
-    
+   
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-      
+       
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+          terraform_wrapper: false
+
+    - name: Terraform Init
+      working-directory: ${{ env.working-directory }}
+      run: terraform init
+
+    - name: Terraform Plan
+      working-directory: ${{ env.working-directory }}
+      run: terraform plan -out tfplan.binary
+
+    - name: Terraform Show
+      working-directory: ${{ env.working-directory }}
+      run: terraform show -json tfplan.binary > plan.json
+
     - name: Setup Infracost
       uses: infracost/actions/setup@v2
       with:
         api-key: ${{ secrets.INFRACOST_API_KEY }}
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-
-    - name: Terraform Init
-      working-directory: ./terraform
-      run: terraform init
-
-    - name: Terraform Plan
-      working-directory: ./terraform
-      run: terraform plan -out tfplan.binary
-
-    - name: Terraform Show
-      working-directory: ./terraform
-      run: terraform show -json tfplan.binary > plan.json
-
-    - name: Terraform Apply
-      working-directory: ./terraform
-      run: terraform apply -input=false -auto-approve
-
     - name: Generate Infracost JSON
-      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost-base.json
-      working-directory: ./terraform
-
+      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost.json
+      working-directory: ${{ env.working-directory }}
+  
     - name: Generate Infracost diff
       run: |
-        infracost diff --path=. \
+        infracost diff --path=/tmp/infracost-base.json \
                           --format=json \
-                          --compare-to=/tmp/infracost-base.json \
+                          --compare-to=/tmp/infracost-plan.json \
                           --out-file=/tmp/infracost.json
-      working-directory: ./terraform
-
+ 
     - name: Post Infracost comment
       run: |
-        infracost comment github --path /tmp/infracost.json \
+          infracost comment github --path /tmp/infracost.json \
                                    --repo $GITHUB_REPOSITORY \
                                    --github-token ${{github.token}} \
                                    --pull-request ${{github.event.pull_request.number}} \
