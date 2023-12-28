@@ -1,3 +1,10 @@
+terraform {
+  backend "azurerm" {
+    storage_account_name = "stostatearantes"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
+}
 provider azurerm {
     features {}
 }
