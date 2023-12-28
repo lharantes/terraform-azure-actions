@@ -3,6 +3,6 @@ provider azurerm {
 }
 
 resource "azurerm_resource_group" "teste" {
-  name = "RG-TESTE"
+  name = "RG-TESTE2222"
   location = "eastus"
 }
