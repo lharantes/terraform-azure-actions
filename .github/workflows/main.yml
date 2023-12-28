@@ -1,6 +1,5 @@
 name: 'Terraform'
-on:
-  workflow_dispatch:
+on: [pull_request]
 
 jobs:
   terraform:
@@ -35,8 +34,24 @@ jobs:
 
     - name: Terraform Plan
       working-directory: ./terraform
-      run: terraform plan -input=false
+      run: terraform plan -out tfplan.binary
 
-#    - name: Terraform Apply
-#      working-directory: ./terraform
-#      run: terraform apply -input=false -auto-approve
+    - name: Terraform Show
+      working-directory: ./terraform
+      run: terraform show -json tfplan.binary > plan.json
+
+    - name: Terraform Apply
+      working-directory: ./terraform
+      run: terraform apply -input=false -auto-approve
+
+    - name: Generate Infracost JSON
+      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost.json
+      working-directory: ./terraform
+
+    - name: Post Infracost comment
+      run: |
+        infracost comment github --path /tmp/infracost.json \
+                                   --repo $GITHUB_REPOSITORY \
+                                   --github-token ${{github.token}} \
+                                   --pull-request ${{github.event.pull_request.number}} \
+                                   --behavior update
