@@ -57,8 +57,16 @@ jobs:
       run: terraform apply -input=false -auto-approve
 
     - name: Generate Infracost JSON
-      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost.json
+      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost-plan.json
       working-directory: ${{ env.working-directory }}
+    
+    - name: Generate Infracost diff
+      run: |
+        infracost diff --path= ${{ env.working-directory }} \
+                          --format=json \
+                          --compare-to=/tmp/infracost-plan.json \
+                          --out-file=/tmp/infracost.json
+
 
     - name: Infracost Actions
       uses: infracost/actions/comment@v1
