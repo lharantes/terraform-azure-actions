@@ -38,7 +38,7 @@ jobs:
                                      --repo=$GITHUB_REPOSITORY \
                                      --github-token=${{github.token}} \
                                      --behavior=update \
-                                     --commit
+                                     --commit 538f3e8
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
