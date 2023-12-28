@@ -37,7 +37,8 @@ jobs:
         infracost comment github --path=/tmp/infracost.json \
                                      --repo=$GITHUB_REPOSITORY \
                                      --github-token=${{github.token}} \
-                                     --behavior=update
+                                     --behavior=update \
+                                     --commit
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
