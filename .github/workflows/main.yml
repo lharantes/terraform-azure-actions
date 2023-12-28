@@ -8,6 +8,7 @@ jobs:
   terraform:
     name: 'Terraform'
     env:
+      TF_ROOT: terraform
       ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -32,33 +33,31 @@ jobs:
       uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Init
-      working-directory: ./terraform
+      working-directory: ${TF_ROOT}
       run: terraform init
 
     - name: Terraform Plan
-      working-directory: ./terraform
+      working-directory: ${TF_ROOT}
       run: terraform plan -out tfplan.binary
 
     - name: Terraform Show
-      working-directory: ./terraform
+      working-directory: ${TF_ROOT}
       run: terraform show -json tfplan.binary > plan.json
 
     - name: Terraform Apply
-      working-directory: ./terraform
+      working-directory: ${TF_ROOT}
       run: terraform apply -input=false -auto-approve
 
     - name: Generate Infracost JSON
       run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost-base.json
-      working-directory: ./terraform
 
     - name: Generate Infracost diff
       run: |
-        infracost diff --path=. \
+        infracost diff --path=${TF_ROOT} \
                           --format=json \
                           --compare-to=/tmp/infracost-base.json \
                           --out-file=/tmp/infracost.json
-      working-directory: ./terraform
-
+ 
     - name: Post Infracost comment
       run: |
         infracost comment github --path /tmp/infracost.json \
