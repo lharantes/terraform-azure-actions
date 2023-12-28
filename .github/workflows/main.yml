@@ -37,9 +37,6 @@ jobs:
       working-directory: ./terraform
       run: terraform plan -input=false
 
-    - name: Terraform Apply
-      working-directory: ./terraform
-      run: terraform apply -input=false -auto-approve
-
-      
-
+#    - name: Terraform Apply
+#      working-directory: ./terraform
+#      run: terraform apply -input=false -auto-approve
