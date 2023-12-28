@@ -49,11 +49,11 @@ jobs:
       run: terraform apply -input=false -auto-approve
 
     - name: Generate Infracost JSON
-      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost-base.json
+      run: infracost breakdown --path ./terraform --format json --out-file /tmp/infracost-base.json
 
     - name: Generate Infracost diff
       run: |
-        infracost diff --path=. \
+        infracost diff --path=./terraform \
                           --format=json \
                           --compare-to=/tmp/infracost-base.json \
                           --out-file=/tmp/infracost.json
