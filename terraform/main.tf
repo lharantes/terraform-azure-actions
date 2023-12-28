@@ -19,7 +19,7 @@ resource "azurerm_resource_group" "rg" {
   location  = var.resource_group_location
 }
 
-# Create virtual network
+# Create virtual network s
 resource "azurerm_virtual_network" "myterraformnetwork" {
   name                = "myVnet"
   address_space       = ["10.0.0.0/16"]
