@@ -31,7 +31,13 @@ jobs:
         infracost breakdown --path=terraform \
                             --format=json \
                             --out-file=/tmp/infracost-base.json
-    
+
+    - name: Post Infracost comment
+        run: |
+            infracost comment github --path=/tmp/infracost.json \
+                                     --repo=$GITHUB_REPOSITORY \
+                                     --github-token=${{github.token}} \
+                                     --behavior=update
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
