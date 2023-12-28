@@ -42,7 +42,7 @@ jobs:
       run: terraform show -json tfplan.binary > plan.json
 
     - name: Terraform Apply
-      working-directory: ./terraform
+      working-directory: ${{ env.working-directory }}
       run: terraform apply -input=false -auto-approve
 
     - name: Generate Infracost JSON
