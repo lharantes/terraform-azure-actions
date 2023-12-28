@@ -1,13 +1,15 @@
-# teste
 name: 'Terraform'
-on: [pull_request]
+on:
+  push:
+    branches:
+    - main
+  pull_request:
 
-permissions:
-  pull-requests: write
- 
 jobs:
   terraform:
     name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
     env:
       working-directory: ${{ github.workspace }}
       ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
@@ -15,7 +17,14 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
       
-    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+
+    defaults:
+      run:
+        shell: bash
    
     steps:
     - name: Checkout
@@ -28,6 +37,8 @@ jobs:
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_wrapper: false 
 
     - name: Terraform Init
       working-directory: ${{ env.working-directory }}
@@ -49,12 +60,8 @@ jobs:
       run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost.json
       working-directory: ${{ env.working-directory }}
 
-
- 
-    - name: Post Infracost comment
-      run: |
-          infracost comment github --path /tmp/infracost.json \
-                                   --repo $GITHUB_REPOSITORY \
-                                   --github-token ${{github.token}} \
-                                   --pull-request ${{github.event.pull_request.number}} \
-                                   --behavior update
+    - name: Infracost Actions
+      uses: infracost/actions/comment@v1
+      with:
+        path: /tmp/infracost.json
+        behavior: update
