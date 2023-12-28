@@ -26,25 +26,6 @@ jobs:
       with:
         api-key: ${{ secrets.INFRACOST_API_KEY }}
 
-    - name: Generate Infracost cost estimate baseline
-      run: |
-        infracost breakdown --path=terraform \
-                            --format=json \
-                            --out-file=/tmp/infracost-base.json
-
-    - name: Generate Infracost diff
-      run: |
-        infracost diff --path=terraform \
-                          --format=json \
-                          --compare-to=/tmp/infracost-base.json \
-                          --out-file=/tmp/infracost.json
-    - name: Post Infracost comment
-      run: |
-        infracost comment github --path=/tmp/infracost.json \
-                                     --repo=$GITHUB_REPOSITORY \
-                                     --github-token=${{github.token}} \
-                                     --behavior=update \
-                                     --commit 538f3e8
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
