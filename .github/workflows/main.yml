@@ -42,19 +42,14 @@ jobs:
       run: terraform show -json tfplan.binary > plan.json
 
     - name: Terraform Apply
-      working-directory: ./terraform
+      working-directory: ${{ env.working-directory }}
       run: terraform apply -input=false -auto-approve
 
     - name: Generate Infracost JSON
-      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost-base.json
-      working-directory: ./terraform
+      run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost.json
+      working-directory: ${{ env.working-directory }}
 
-    - name: Generate Infracost diff
-      run: |
-        infracost diff --path=/tmp/infracost-base.json \
-                          --format=json \
-                          --compare-to=/tmp/infracost-plan.json \
-                          --out-file=/tmp/infracost.json
+
  
     - name: Post Infracost comment
       run: |
